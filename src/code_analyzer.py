@@ -72,7 +72,7 @@ def collect_source_code(owner, repo, files, max_files=20,
         if file_size is not None and file_size > max_file_size:
             continue
 
-        files_processed += 1
+        
 
         path = file["path"]
 
@@ -92,11 +92,13 @@ def collect_source_code(owner, repo, files, max_files=20,
         if total_chars + len(content) > max_total_chars:
             continue
 
+        
         # Combine filename and source code
         formatted_content = f"File: {path}\n\n{content}"
 
         source_code.append(formatted_content)
 
         total_chars += len(content)
+        files_processed += 1
 
     return "\n\n" + "\n\n".join(source_code)

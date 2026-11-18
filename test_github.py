@@ -1,6 +1,6 @@
 
 from src.code_analyzer import filter_source_files
-from src.github_client import get_repository_info, get_repository_files, get_file_content
+from src.github_client import get_repository_info, get_repository_files, get_file_content,github_session
 
 owner = "openai"
 repo = "openai-python"
@@ -19,4 +19,6 @@ if files:
 
     for file in filtered_files:
         print(file["path"])
+
+
 
