@@ -1,3 +1,4 @@
+from src.github_client import get_file_content
 
 # Supported source code extensions
 SUPPORTED_EXTENSIONS = {
@@ -49,3 +50,53 @@ def filter_source_files(files):
         filtered_files.append(file)
 
     return filtered_files
+
+
+def collect_source_code(owner, repo, files, max_files=20,
+                        max_file_size=100 * 1024,
+                        max_total_chars=100_000):
+
+    source_code = []
+    total_chars = 0
+    files_processed = 0
+
+    for file in files:
+
+        # Stop after processing the maximum number of files
+        if files_processed >= max_files:
+            break
+
+        # Skip files larger than our size limit
+        file_size = file.get("size")
+
+        if file_size is not None and file_size > max_file_size:
+            continue
+
+        files_processed += 1
+
+        path = file["path"]
+
+        # Retrieve the actual source code
+        content = get_file_content(owner, repo, path)
+
+        if content is None:
+            continue
+
+        # Check the actual downloaded content size
+        actual_size = len(content.encode("utf-8"))
+
+        if actual_size > max_file_size:
+            continue
+
+        # Check the total content limit
+        if total_chars + len(content) > max_total_chars:
+            continue
+
+        # Combine filename and source code
+        formatted_content = f"File: {path}\n\n{content}"
+
+        source_code.append(formatted_content)
+
+        total_chars += len(content)
+
+    return "\n\n" + "\n\n".join(source_code)

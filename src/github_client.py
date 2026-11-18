@@ -1,6 +1,6 @@
-
 import requests
 import base64
+
 
 def get_repository_info(owner, repo): 
     """Fetches information about a GitHub repository."""
