@@ -7,6 +7,7 @@ class AIReviewError(Exception):
     pass
 
 load_dotenv()
+MODEL = os.getenv("OPENAI_MODEL", "gpt-6-luna")
 
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
@@ -14,7 +15,7 @@ client = OpenAI(
 
 def test_openai_connection():
     response = client.responses.create(
-        model="gpt-6-luna",
+        model=MODEL,
         input="Explain what a Python function is in one sentence."
     )
 
@@ -47,7 +48,7 @@ def review_repository(source_code):
 
     try:
         response = client.responses.create(
-            model="gpt-6-luna",
+            model=MODEL,
             instructions=instructions,
             input=f"Review the following repository source code:\n\n{source_code}"
         )

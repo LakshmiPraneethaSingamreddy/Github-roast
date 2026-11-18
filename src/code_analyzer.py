@@ -35,7 +35,7 @@ def filter_source_files(files):
         path = file["path"]
 
         # Extract the file extension
-        extension = "." + path.split(".")[-1] if "." in path.split("/")[-1] else ""
+        extension = "." + path.split(".")[-1].lower() if "." in path.split("/")[-1] else ""
 
         # Check whether the extension is supported
         if extension not in SUPPORTED_EXTENSIONS:

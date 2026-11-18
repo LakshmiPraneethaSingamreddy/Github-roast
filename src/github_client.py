@@ -59,8 +59,8 @@ def get_all_repository_files(owner, repo, tree_sha):
             f"GitHub returned an incomplete tree for SHA: {tree_sha}"
         )
 
-    if not tree_data:
-        return None
+    # if not tree_data:
+    #     return None
 
     all_files = []
 
@@ -74,8 +74,8 @@ def get_all_repository_files(owner, repo, tree_sha):
                 owner, repo, item["sha"]
             )
 
-            if sub_files is None:
-                return None
+            # if sub_files is None:
+            #     return None
             for file in sub_files:
                 file["path"] = item["path"] + "/" + file["path"]
 
@@ -88,8 +88,8 @@ def get_repository_files(owner, repo):
     # Get repository information
     repo_info = get_repository_info(owner, repo)
 
-    if not repo_info:
-        return None
+    # if not repo_info:
+    #     return None
 
     # Identify the default branch
     branch = repo_info["default_branch"]
