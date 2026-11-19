@@ -3,6 +3,8 @@ import base64
 import os
 from dotenv import load_dotenv
 
+GITHUB_API_BASE_URL = "https://api.github.com"
+
 class GitHubAPIError(Exception):
     """Raised when a GitHub API request fails."""
     pass
@@ -42,25 +44,22 @@ def make_github_request(url, params=None):
 
 def get_repository_info(owner, repo): 
     """Fetches information about a GitHub repository."""
-    url = f"https://api.github.com/repos/{owner}/{repo}"
+    url = f"{GITHUB_API_BASE_URL}/repos/{owner}/{repo}"
 
     return make_github_request(url)
 
 def get_tree_by_sha(owner, repo, tree_sha):
-    url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/{tree_sha}"
+    url = f"{GITHUB_API_BASE_URL}/repos/{owner}/{repo}/git/trees/{tree_sha}"
 
     return make_github_request(url)
 
-def get_all_repository_files(owner, repo, tree_sha):
-    tree_data = get_tree_by_sha(owner, repo, tree_sha)
+
+def _collect_files_from_tree(owner, repo, tree_data):
 
     if tree_data["truncated"]:
         raise GitHubAPIError(
-            f"GitHub returned an incomplete tree for SHA: {tree_sha}"
+            "GitHub returned an incomplete repository tree."
         )
-
-    # if not tree_data:
-    #     return None
 
     all_files = []
 
@@ -70,12 +69,19 @@ def get_all_repository_files(owner, repo, tree_sha):
             all_files.append(item)
 
         elif item["type"] == "tree":
-            sub_files = get_all_repository_files(
-                owner, repo, item["sha"]
+
+            sub_tree_data = get_tree_by_sha(
+                owner,
+                repo,
+                item["sha"]
             )
 
-            # if sub_files is None:
-            #     return None
+            sub_files = _collect_files_from_tree(
+                owner,
+                repo,
+                sub_tree_data
+            )
+
             for file in sub_files:
                 file["path"] = item["path"] + "/" + file["path"]
 
@@ -83,35 +89,39 @@ def get_all_repository_files(owner, repo, tree_sha):
 
     return all_files
 
+
+def get_all_repository_files(owner, repo, tree_sha):
+
+    tree_data = get_tree_by_sha(owner, repo, tree_sha)
+
+    return _collect_files_from_tree(
+        owner,
+        repo,
+        tree_data
+    )
+
+
 def get_repository_files(owner, repo):
     """Fetches the file structure of a GitHub repository."""
-    # Get repository information
+
     repo_info = get_repository_info(owner, repo)
 
-    # if not repo_info:
-    #     return None
-
-    # Identify the default branch
     branch = repo_info["default_branch"]
 
-    # Construct the GitHub API URL
-    url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/{branch}"
+    url = f"{GITHUB_API_BASE_URL}/repos/{owner}/{repo}/git/trees/{branch}"
 
-    data = make_github_request(url)
+    root_tree_data = make_github_request(url)
 
-    if data["truncated"]:
-        raise GitHubAPIError(
-            "GitHub returned an incomplete repository tree."
-        )
-
-    return get_all_repository_files(
-        owner, repo, data["sha"]
+    return _collect_files_from_tree(
+        owner,
+        repo,
+        root_tree_data
     )
 
 
 def get_file_content(owner, repo, path):
     """Fetches the content of a specific file in a GitHub repository."""
-    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    url = f"{GITHUB_API_BASE_URL}/repos/{owner}/{repo}/contents/{path}"
 
     data = make_github_request(url)
 
