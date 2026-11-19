@@ -1,4 +1,4 @@
-from src.github_client import get_file_content
+from github_client import get_file_content
 
 # Supported source code extensions
 SUPPORTED_EXTENSIONS = {
