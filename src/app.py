@@ -72,13 +72,15 @@ if analyze_button:
             #retrieve the repository information
             repo_info = get_repository_info(owner, repo)
 
-            st.subheader("Repository Information")
-            st.write(f"**Repository:** {repo_info['full_name']}")
-            st.write(f"**Description:** {repo_info['description']}")
-            st.write(f"**Language:** {repo_info['language']}")
-            st.write(f"**Stars:** {repo_info['stargazers_count']}")
-            st.write(f"**Forks:** {repo_info['forks_count']}")
-            st.write(f"**Default Branch:** {repo_info['default_branch']}")
+            st.subheader("📁 Repository Overview")
+            st.title(repo_info["full_name"])
+            st.write(
+                repo_info["description"] or "No description available."
+            )
+
+            st.caption(
+                f"Default Branch: {repo_info['default_branch']}"
+            )
 
             #retrieve and filter repository files
             with st.spinner("Retrieving repository files..."):
@@ -86,18 +88,11 @@ if analyze_button:
                 all_files = get_repository_files(owner, repo)
         
                 source_files = filter_source_files(all_files)
-        
-            st.success("Repository files retrieved successfully!")
-        
-            st.write(f"Total repository files: {len(all_files)}")
-            st.write(f"Supported source files: {len(source_files)}")
 
             #collect source code from the filtered files
             with st.spinner("Collecting source code..."):
                     source_code = collect_source_code( owner, repo, source_files)
-            st.success("Source code collected successfully!")
-            st.write(f"Total characters in source code: {len(source_code)}")
-
+            
             # Check whether source code was collected
             if not source_code.strip():
                 st.warning(
@@ -105,6 +100,26 @@ if analyze_button:
                     "in this repository."
                 )
                 st.stop()
+            st.success("Source code collected successfully!")
+            st.subheader("📊 Repository Statistics")
+
+            col1, col2, col3, col4, col5 = st.columns(5)
+
+            with col1:
+                st.metric("⭐ Stars", repo_info["stargazers_count"])
+
+            with col2:
+                st.metric("🍴 Forks", repo_info["forks_count"])
+
+            with col3:
+                st.metric("📁 Repository Files", len(all_files))
+
+            with col4:
+                st.metric("💻 Supported Files", len(source_files))
+
+            with col5:
+                st.metric("📝 Characters Read", f"{len(source_code):,}")
+
 
         except GitHubAPIError as error:
             st.error(f"Unable to retrieve repository: {error}")
@@ -115,10 +130,45 @@ if analyze_button:
             with st.spinner("AI is reviewing your repository..."):
                 review = review_repository(source_code)
 
+            # Separate AI response into two sections
+            roast_marker = "## SECTION 1: THE ROAST"
+            review_marker = "## SECTION 2: PROFESSIONAL CODE REVIEW"
+
+            if (
+                roast_marker in review
+                and review_marker in review
+            ):
+                roast_and_review = review.split(
+                    roast_marker, 1
+                )[1]
+
+                roast_content, professional_review = (
+                    roast_and_review.split(review_marker, 1)
+                )
+
+                roast_content = roast_content.strip()
+                professional_review = professional_review.strip()
+
+            else:
+                raise AIReviewError(
+                    "AI response did not follow the expected format."
+                )
+
             st.success("AI review completed!")
 
-            st.subheader("🤖 AI Code Review")
-            st.markdown(review)
+            # Display separate review tabs
+            roast_tab, review_tab = st.tabs([
+                "🔥 AI Roast",
+                "💻 Professional Code Review"
+            ])
+
+            with roast_tab:
+                st.markdown("# 🔥 Your Code Roast")
+                st.markdown(roast_content)
+
+            with review_tab:
+                st.markdown("# 💻 Professional Code Review")
+                st.markdown(professional_review)
 
         except AIReviewError as error:
             st.error(f"Unable to complete AI review: {error}")
