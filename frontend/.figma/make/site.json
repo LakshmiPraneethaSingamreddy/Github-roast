@@ -1,0 +1,10 @@
+{
+  "description": "A project management dashboard helps teams track progress, review key metrics and achievements, and organize project entries in one clear workspace.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

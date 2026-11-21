@@ -1,6 +1,14 @@
-.env
+# Python
 .venv/
-
-# Python cache files
 __pycache__/
-*.pyc
+*.py[cod]
+
+# Environment variables
+.env
+
+# Node
+node_modules/
+dist/
+
+# Build and cache
+.vite/
